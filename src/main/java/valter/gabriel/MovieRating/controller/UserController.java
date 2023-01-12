@@ -27,13 +27,38 @@ public class UserController {
 
 
     @PostMapping("save")
-    public ResponseEntity<User> createSimpleUser(@RequestBody SaveUserRequest users) {
-        return new ResponseEntity<>(usersService.saveUser(users), HttpStatus.CREATED);
+    public ResponseEntity<User> createSimpleUser(@RequestBody SaveUserRequest userRequest) {
+        return new ResponseEntity<>(usersService.saveUser(userRequest), HttpStatus.CREATED);
     }
 
 
-    @PostMapping("rate-movie/{movieId}")
+    @PostMapping("rateMovie/{movieId}")
     public ResponseEntity<User> rateMovie(@RequestBody AddMovieRate addMovieRate, @PathVariable("movieId") Float movieId) {
         return new ResponseEntity<>(usersService.addRateToMovie(addMovieRate, movieId), HttpStatus.OK);
+    }
+
+    @PatchMapping("update/username")
+    public ResponseEntity<User> updateUsername(@RequestBody SaveUserRequest userRequest) {
+        return new ResponseEntity<>(usersService.updateUsername(userRequest), HttpStatus.OK);
+    }
+
+    @PatchMapping("update/fullname")
+    public ResponseEntity<User> updateFullname(@RequestBody SaveUserRequest userRequest) {
+        return new ResponseEntity<>(usersService.updateFullname(userRequest), HttpStatus.OK);
+    }
+
+    @PatchMapping("update/email")
+    public ResponseEntity<User> updateEmail(@RequestBody SaveUserRequest userRequest) {
+        return new ResponseEntity<>(usersService.updateEmail(userRequest), HttpStatus.OK);
+    }
+
+    @PatchMapping("update/password")
+    public ResponseEntity<User> updatePassword(@RequestBody SaveUserRequest userRequest) {
+        return new ResponseEntity<>(usersService.updatePassword(userRequest), HttpStatus.OK);
+    }
+
+    @DeleteMapping("delete")
+    public ResponseEntity<String> deleteUser() {
+        return new ResponseEntity<>(usersService.deleteUser(), HttpStatus.NO_CONTENT);
     }
 }

@@ -31,21 +31,33 @@ public class UsersService implements UserDetailsService {
 
     public User saveAdmin(SaveUserRequest user) {
         ModelMapper mapper = new ModelMapper();
+        if (usersRepo.findByUsername(user.getUsername()).isPresent()){
+            throw new ApiRequestException(HttpStatus.CONFLICT, "Usuário já existente no banco");
+        }
+
         User admin = mapper.map(user, User.class);
 
         admin.setPassword(passwordEncoder.encode(user.getPassword()));
         admin.getRoles().add(Role.ROLE_ADMIN);
         admin.getRoles().add(Role.ROLE_USER);
+        admin.setToken("Logue para gerar um token e utilizar os endpoints");
 
         return usersRepo.save(admin);
     }
 
     public User saveUser(SaveUserRequest user) {
         ModelMapper mapper = new ModelMapper();
+
+        if (usersRepo.findByUsername(user.getUsername()).isPresent()){
+            throw new ApiRequestException(HttpStatus.CONFLICT, "Usuário já existente no banco");
+        }
+
+
         User simpleUser = mapper.map(user, User.class);
 
         simpleUser.setPassword(passwordEncoder.encode(user.getPassword()));
         simpleUser.getRoles().add(Role.ROLE_USER);
+        simpleUser.setToken("Logue para gerar um token e utilizar os endpoints");
 
         return usersRepo.save(simpleUser);
     }
@@ -75,6 +87,47 @@ public class UsersService implements UserDetailsService {
 
     public User getUserByUsername(String username) {
         return usersRepo.findByUsername(username).orElseThrow(() -> new ApiRequestException(HttpStatus.NOT_FOUND, "User not found"));
+    }
+
+    public User updateUsername(SaveUserRequest userRequest) {
+        User user = usersRepo.findByUsername(getUsernameByToken()).orElseThrow(() -> new ApiRequestException(HttpStatus.NOT_FOUND, "User not found"));
+        user.setUsername(userRequest.getUsername());
+        usersRepo.save(user);
+        return user;
+    }
+
+    public User updateFullname(SaveUserRequest userRequest) {
+        User user = usersRepo.findByUsername(getUsernameByToken()).orElseThrow(() -> new ApiRequestException(HttpStatus.NOT_FOUND, "User not found"));
+        user.setFullname(userRequest.getFullname());
+        usersRepo.save(user);
+        return user;
+    }
+
+    public User updateEmail(SaveUserRequest userRequest) {
+        User user = usersRepo.findByUsername(getUsernameByToken()).orElseThrow(() -> new ApiRequestException(HttpStatus.NOT_FOUND, "User not found"));
+        user.setEmail(userRequest.getEmail());
+        usersRepo.save(user);
+        return user;
+    }
+
+    public User updatePassword(SaveUserRequest userRequest) {
+        User user = usersRepo.findByUsername(getUsernameByToken()).orElseThrow(() -> new ApiRequestException(HttpStatus.NOT_FOUND, "User not found"));
+        user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+        usersRepo.save(user);
+        return user;
+    }
+
+    public User updateToken(String token, String username) {
+        User user = usersRepo.findByUsername(username).orElseThrow(() -> new ApiRequestException(HttpStatus.NOT_FOUND, "User not found"));
+        user.setToken(token);
+        usersRepo.save(user);
+        return user;
+    }
+
+    public String deleteUser() {
+        User user = usersRepo.findByUsername(getUsernameByToken()).orElseThrow(() -> new ApiRequestException(HttpStatus.NOT_FOUND, "User not found"));
+        usersRepo.delete(user);
+        return "Usuário " + user.getUsername() + " exluído com sucesso! Token " + user.getToken() + " foi invalidado.";
     }
 
     @Override

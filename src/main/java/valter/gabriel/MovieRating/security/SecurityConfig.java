@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import valter.gabriel.MovieRating.filter.CustomAuthenticationFilter;
 import valter.gabriel.MovieRating.filter.CustomAuthorizationFilter;
+import valter.gabriel.MovieRating.service.UsersService;
 
 
 import static org.springframework.http.HttpMethod.GET;
@@ -25,11 +26,13 @@ import static org.springframework.http.HttpMethod.POST;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final UsersService service;
 
     @Autowired
-    public SecurityConfig(UserDetailsService userDetailsService, BCryptPasswordEncoder passwordEncoder) {
+    public SecurityConfig(UserDetailsService userDetailsService, BCryptPasswordEncoder passwordEncoder, UsersService service) {
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
+        this.service = service;
     }
 
     @Override
@@ -39,7 +42,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManagerBean());
+        CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManagerBean(), service);
         customAuthenticationFilter.setFilterProcessesUrl("/api/login");
 
         http.csrf().disable();
@@ -48,7 +51,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.authorizeRequests().antMatchers(GET, "/api/v1/user/**").hasAuthority("ROLE_USER");
         http.authorizeRequests().antMatchers(GET, "/api/v1/admin/getMovies/**").hasAuthority("ROLE_ADMIN");
-        http.authorizeRequests().antMatchers(POST, "/api/v1/user/rate-movie/**").hasAuthority("ROLE_USER");
+        http.authorizeRequests().antMatchers(POST, "/api/v1/user/rateMovie/**").hasAuthority("ROLE_USER");
 
         http.authorizeRequests().anyRequest().authenticated();
 

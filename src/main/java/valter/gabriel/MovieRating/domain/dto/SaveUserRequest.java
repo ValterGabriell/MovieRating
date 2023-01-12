@@ -13,4 +13,5 @@ public class SaveUserRequest {
     private String username;
     private String email;
     private String password;
+    private String token;
 }
