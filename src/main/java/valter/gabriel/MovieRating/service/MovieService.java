@@ -2,25 +2,26 @@ package valter.gabriel.MovieRating.service;
 
 
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import valter.gabriel.MovieRating.domain.Movie;
-
 import valter.gabriel.MovieRating.domain.movie.MovieModel;
 import valter.gabriel.MovieRating.repo.MovieRepo;
+import valter.gabriel.MovieRating.repo.UserMovieRepo;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.DoubleStream;
 
 @Service
 @RequiredArgsConstructor
 public class MovieService {
 
     private final MovieRepo movieRepo;
+    private final UserMovieRepo userMovieRepo;
 
 
     public void getMoviesDataFromApi() {
@@ -53,6 +54,17 @@ public class MovieService {
 
     public List<Movie> getAllMovies() {
         return movieRepo.findAll();
+    }
+
+    public Double totalAverageRate(Float movieId) {
+
+        return userMovieRepo.findAll()
+                .stream()
+                .filter(movie -> movie.getUserMoviePK().getMovieId().equals(movieId))
+                .flatMapToDouble(movie -> DoubleStream.of(movie.getRating()))
+                .average().getAsDouble();
+
+
     }
 
 }

@@ -3,6 +3,7 @@ package valter.gabriel.MovieRating.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import valter.gabriel.MovieRating.domain.User;
 import valter.gabriel.MovieRating.domain.dto.AddMovieRate;
@@ -31,8 +32,8 @@ public class UserController {
     }
 
 
-    @PostMapping("rate-movie")
-    public ResponseEntity<User> rateMovie(@RequestBody AddMovieRate addMovieRate) {
-        return new ResponseEntity<>(usersService.addRateToMovie(addMovieRate), HttpStatus.OK);
+    @PostMapping("rate-movie/{movieId}")
+    public ResponseEntity<User> rateMovie(@RequestBody AddMovieRate addMovieRate, @PathVariable("movieId") Float movieId) {
+        return new ResponseEntity<>(usersService.addRateToMovie(addMovieRate, movieId), HttpStatus.OK);
     }
 }

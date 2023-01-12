@@ -28,8 +28,8 @@ public class User {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> roles = new HashSet<Role>();
 
-    @OneToMany(targetEntity = UserMovieRate.class, cascade = CascadeType.ALL)
+    @OneToMany(targetEntity = UserMovie.class, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_fk", referencedColumnName = "userId")
-    private List<UserMovieRate> userMovieRates;
+    private List<UserMovie> userMovies;
 
 }

@@ -1,4 +1,4 @@
-package valter.gabriel.MovieRating.domain;
+package valter.gabriel.MovieRating.security;
 
 import lombok.Data;
 

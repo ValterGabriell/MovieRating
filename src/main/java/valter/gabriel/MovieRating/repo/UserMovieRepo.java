@@ -1,9 +1,8 @@
 package valter.gabriel.MovieRating.repo;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import valter.gabriel.MovieRating.domain.Movie;
-import valter.gabriel.MovieRating.domain.UserMovieRate;
+import valter.gabriel.MovieRating.domain.UserMovie;
 
 
-public interface UserMovieRepo extends JpaRepository<UserMovieRate, Float> {
+public interface UserMovieRepo extends JpaRepository<UserMovie, Float> {
 }
