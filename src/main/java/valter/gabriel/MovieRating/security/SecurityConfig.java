@@ -17,9 +17,7 @@ import valter.gabriel.MovieRating.filter.CustomAuthenticationFilter;
 import valter.gabriel.MovieRating.filter.CustomAuthorizationFilter;
 import valter.gabriel.MovieRating.service.UsersService;
 
-
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.*;
 
 @Configuration
 @EnableWebSecurity
@@ -52,6 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests().antMatchers(GET, "/api/v1/user/**").hasAuthority("ROLE_USER");
         http.authorizeRequests().antMatchers(GET, "/api/v1/admin/getMovies/**").hasAuthority("ROLE_ADMIN");
         http.authorizeRequests().antMatchers(POST, "/api/v1/user/rateMovie/**").hasAuthority("ROLE_USER");
+        http.authorizeRequests().antMatchers(PATCH, "/api/v1/user/rateMovie/**").hasAuthority("ROLE_USER");
 
         http.authorizeRequests().anyRequest().authenticated();
 

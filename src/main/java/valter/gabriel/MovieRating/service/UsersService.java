@@ -17,9 +17,11 @@ import valter.gabriel.MovieRating.domain.dto.UserMoviePK;
 import valter.gabriel.MovieRating.handle.ApiRequestException;
 import valter.gabriel.MovieRating.repo.MovieRepo;
 import valter.gabriel.MovieRating.repo.UsersRepo;
+import valter.gabriel.MovieRating.utils.Utilities;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +33,7 @@ public class UsersService implements UserDetailsService {
 
     public User saveAdmin(SaveUserRequest user) {
         ModelMapper mapper = new ModelMapper();
-        if (usersRepo.findByUsername(user.getUsername()).isPresent()){
+        if (usersRepo.findByUsername(user.getUsername()).isPresent()) {
             throw new ApiRequestException(HttpStatus.CONFLICT, "Usuário já existente no banco");
         }
 
@@ -48,7 +50,7 @@ public class UsersService implements UserDetailsService {
     public User saveUser(SaveUserRequest user) {
         ModelMapper mapper = new ModelMapper();
 
-        if (usersRepo.findByUsername(user.getUsername()).isPresent()){
+        if (usersRepo.findByUsername(user.getUsername()).isPresent()) {
             throw new ApiRequestException(HttpStatus.CONFLICT, "Usuário já existente no banco");
         }
 
@@ -62,27 +64,6 @@ public class UsersService implements UserDetailsService {
         return usersRepo.save(simpleUser);
     }
 
-    public User addRateToMovie(AddMovieRate addMovieRate, Float movieId) {
-        ModelMapper mapper = new ModelMapper();
-
-        User user = usersRepo.findByUsername(getUsernameByToken()).orElseThrow(() -> new ApiRequestException(HttpStatus.NOT_FOUND, "User not found"));
-
-
-        //recebendo filme e salvando ele na entidade de UserMovie
-        Movie movie = movieRepo.findById(movieId).orElseThrow(() -> new ApiRequestException(HttpStatus.NOT_FOUND, "Movie not found"));
-        UserMovie userMovie = mapper.map(movie, UserMovie.class);
-
-
-        //criando chave estrangeira e setando no objeto userMovie
-        UserMoviePK userMoviePK = new UserMoviePK(user.getUserId(), movieId);
-        userMovie.setUserMoviePK(userMoviePK);
-        userMovie.setRating(addMovieRate.getRate());
-
-        user.getUserMovies().add(userMovie);
-
-        usersRepo.save(user);
-        return user;
-    }
 
 
     public User getUserByUsername(String username) {
@@ -90,31 +71,32 @@ public class UsersService implements UserDetailsService {
     }
 
     public User updateUsername(SaveUserRequest userRequest) {
-        User user = usersRepo.findByUsername(getUsernameByToken()).orElseThrow(() -> new ApiRequestException(HttpStatus.NOT_FOUND, "User not found"));
-        user.setUsername(userRequest.getUsername());
-        usersRepo.save(user);
-        return user;
+        User userByToken = Utilities.getUserByToken(usersRepo);
+
+        userByToken.setUsername(userRequest.getUsername());
+        usersRepo.save(userByToken);
+        return userByToken;
     }
 
     public User updateFullname(SaveUserRequest userRequest) {
-        User user = usersRepo.findByUsername(getUsernameByToken()).orElseThrow(() -> new ApiRequestException(HttpStatus.NOT_FOUND, "User not found"));
-        user.setFullname(userRequest.getFullname());
-        usersRepo.save(user);
-        return user;
+        User userByToken = Utilities.getUserByToken(usersRepo);
+        userByToken.setFullname(userRequest.getFullname());
+        usersRepo.save(userByToken);
+        return userByToken;
     }
 
     public User updateEmail(SaveUserRequest userRequest) {
-        User user = usersRepo.findByUsername(getUsernameByToken()).orElseThrow(() -> new ApiRequestException(HttpStatus.NOT_FOUND, "User not found"));
-        user.setEmail(userRequest.getEmail());
-        usersRepo.save(user);
-        return user;
+        User userByToken = Utilities.getUserByToken(usersRepo);
+        userByToken.setEmail(userRequest.getEmail());
+        usersRepo.save(userByToken);
+        return userByToken;
     }
 
     public User updatePassword(SaveUserRequest userRequest) {
-        User user = usersRepo.findByUsername(getUsernameByToken()).orElseThrow(() -> new ApiRequestException(HttpStatus.NOT_FOUND, "User not found"));
-        user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
-        usersRepo.save(user);
-        return user;
+        User userByToken = Utilities.getUserByToken(usersRepo);
+        userByToken.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+        usersRepo.save(userByToken);
+        return userByToken;
     }
 
     public User updateToken(String token, String username) {
@@ -125,9 +107,13 @@ public class UsersService implements UserDetailsService {
     }
 
     public String deleteUser() {
-        User user = usersRepo.findByUsername(getUsernameByToken()).orElseThrow(() -> new ApiRequestException(HttpStatus.NOT_FOUND, "User not found"));
-        usersRepo.delete(user);
-        return "Usuário " + user.getUsername() + " exluído com sucesso! Token " + user.getToken() + " foi invalidado.";
+        User userByToken = Utilities.getUserByToken(usersRepo);
+        usersRepo.delete(userByToken);
+        return "Usuário " + userByToken.getUsername() + " exluído com sucesso! Token " + userByToken.getToken() + " foi invalidado.";
+    }
+
+    public List<UserMovie> getAllMovieThatUserAreRated() {
+        return Utilities.getUserByToken(usersRepo).getUserMovies();
     }
 
     @Override
@@ -140,16 +126,4 @@ public class UsersService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), authorities);
     }
 
-    private String getUsernameByToken() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        String name;
-        if (principal instanceof UserDetails) {
-            name = ((UserDetails) principal).getUsername();
-        } else {
-            name = principal.toString();
-        }
-
-        return name;
-    }
 }
